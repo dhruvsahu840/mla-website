@@ -1,0 +1,284 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum AdminRole {
+  ADMIN
+  STAFF
+}
+
+enum AdminStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum WorkStatus {
+  PROPOSED
+  IN_PROGRESS
+  COMPLETED
+  ON_HOLD
+}
+
+enum GrievanceStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  ASSIGNED
+  IN_PROGRESS
+  NEED_MORE_INFO
+  RESOLVED
+  CLOSED
+  REJECTED
+}
+
+enum GrievancePriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model AdminUser {
+  id           String      @id @default(cuid())
+  name         String
+  email        String      @unique
+  passwordHash String
+  role         AdminRole   @default(STAFF)
+  status       AdminStatus @default(ACTIVE)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  lastLoginAt  DateTime?
+
+  posts            Post[]
+  assignedGrievance GrievanceUpdate[]
+  auditLogs         AuditLog[]
+
+  @@map("admin_users")
+}
+
+model Citizen {
+  id           String    @id @default(cuid())
+  name         String
+  phone        String?   @unique
+  email        String?   @unique
+  isVerified   Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  grievances Grievance[]
+
+  @@map("citizens")
+}
+
+model Grievance {
+  id              String            @id @default(cuid())
+  referenceNumber String            @unique
+  citizenId       String?
+  citizen         Citizen?          @relation(fields: [citizenId], references: [id])
+  name            String
+  phone           String
+  email           String?
+  category        String
+  subject         String
+  description     String            @db.Text
+  location        String?
+  priority        GrievancePriority @default(MEDIUM)
+  status          GrievanceStatus   @default(SUBMITTED)
+  assignedTo      String?
+  attachmentUrl   String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  resolvedAt      DateTime?
+
+  updates GrievanceUpdate[]
+
+  @@index([status])
+  @@index([category])
+  @@map("grievances")
+}
+
+model GrievanceUpdate {
+  id          String    @id @default(cuid())
+  grievanceId String
+  grievance   Grievance @relation(fields: [grievanceId], references: [id], onDelete: Cascade)
+  status      GrievanceStatus
+  message     String    @db.Text
+  updatedById String?
+  updatedBy   AdminUser? @relation(fields: [updatedById], references: [id])
+  createdAt   DateTime  @default(now())
+
+  @@map("grievance_updates")
+}
+
+model Post {
+  id          String        @id @default(cuid())
+  title       String
+  slug        String        @unique
+  excerpt     String?
+  content     String        @db.Text
+  coverImage  String?       @db.Text
+  category    String?
+  status      ContentStatus @default(DRAFT)
+  publishedAt DateTime?
+  authorId    String?
+  author      AdminUser?    @relation(fields: [authorId], references: [id])
+  metaTitle       String?
+  metaDescription String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([status])
+  @@index([category])
+  @@map("posts")
+}
+
+model DevelopmentWork {
+  id             String     @id @default(cuid())
+  title          String
+  slug           String     @unique
+  category       String
+  description    String     @db.Text
+  location       String?
+  latitude       Float?
+  longitude      Float?
+  status         WorkStatus @default(PROPOSED)
+  startDate      DateTime?
+  completionDate DateTime?
+  images         Json?
+  documents      Json?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  @@index([status])
+  @@index([category])
+  @@map("development_works")
+}
+
+model Event {
+  id          String        @id @default(cuid())
+  title       String
+  slug        String        @unique
+  description String        @db.Text
+  venue       String?
+  eventDate   DateTime
+  coverImage  String?
+  status      ContentStatus @default(DRAFT)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@map("events")
+}
+
+model GalleryAlbum {
+  id        String        @id @default(cuid())
+  title     String
+  slug      String        @unique
+  category  String?
+  coverImage String?
+  createdAt DateTime      @default(now())
+
+  items GalleryItem[]
+
+  @@map("gallery_albums")
+}
+
+model GalleryItem {
+  id       String       @id @default(cuid())
+  albumId  String
+  album    GalleryAlbum @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  url      String
+  type     String       @default("image")
+  caption  String?
+  takenAt  DateTime?
+  createdAt DateTime    @default(now())
+
+  @@map("gallery_items")
+}
+
+model Scheme {
+  id            String        @id @default(cuid())
+  title         String
+  slug          String        @unique
+  description   String        @db.Text
+  eligibility   String?       @db.Text
+  documents     Json?
+  processSteps  Json?
+  officialLink  String?
+  status        ContentStatus @default(DRAFT)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@map("schemes")
+}
+
+model Page {
+  id              String        @id @default(cuid())
+  title           String
+  slug            String        @unique
+  content         String        @db.Text
+  status          ContentStatus @default(DRAFT)
+  metaTitle       String?
+  metaDescription String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@map("pages")
+}
+
+model Media {
+  id          String   @id @default(cuid())
+  provider    String
+  publicId    String?
+  url         String
+  type        String
+  width       Int?
+  height      Int?
+  altText     String?
+  uploadedBy  String?
+  createdAt   DateTime @default(now())
+
+  @@map("media")
+}
+
+model SiteSetting {
+  key       String   @id
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+
+  @@map("site_settings")
+}
+
+model AuditLog {
+  id        String    @id @default(cuid())
+  adminId   String?
+  admin     AdminUser? @relation(fields: [adminId], references: [id])
+  action    String
+  entity    String
+  entityId  String?
+  meta      Json?
+  createdAt DateTime  @default(now())
+
+  @@map("audit_logs")
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  subject   String?
+  message   String   @db.Text
+  createdAt DateTime @default(now())
+
+  @@map("contact_messages")
+}

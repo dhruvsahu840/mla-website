@@ -1,0 +1,16 @@
+{
+  "name": "@mla/validation",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "types": "index.ts",
+  "dependencies": {
+    "zod": "^4.4.3"
+  }
+}
