@@ -56,8 +56,9 @@ router.post("/login", loginLimiter, async (req, res, next) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 8 * 60 * 60 * 1000,
+      path: "/",
     });
 
     return ok(
@@ -76,7 +77,12 @@ router.post("/login", loginLimiter, async (req, res, next) => {
 });
 
 router.post("/logout", (req, res) => {
-  res.clearCookie("token");
+  res.clearCookie("token", {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  path: "/",
+});
   return ok(res, null, "Logged out");
 });
 
