@@ -1,9 +1,8 @@
-@"
 node_modules/
+certs/
 .env
 .env.*
 !.env.example
 .next/
 dist/
 build/
-"@ | Set-Content .gitignore
