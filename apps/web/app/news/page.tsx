@@ -1,3 +1,4 @@
+
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Calendar } from "lucide-react";
@@ -36,15 +37,22 @@ type PostsResponse = {
 };
 
 async function getPosts(): Promise<Post[]> {
-  const res = await fetch("http://localhost:4000/api/posts", {
+  const API_URL =
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+
+  const res = await fetch(`${API_URL}/api/posts`, {
     cache: "no-store",
   });
 
   if (!res.ok) {
-    throw new Error("Failed to fetch posts");
+    throw new Error(`Failed to fetch posts: ${res.status}`);
   }
 
   const result: PostsResponse = await res.json();
+
+  if (!result.success || !Array.isArray(result.data)) {
+    throw new Error("Invalid posts response");
+  }
 
   return result.data.filter((post) => post.status === "PUBLISHED");
 }
@@ -91,7 +99,6 @@ export default async function NewsPage() {
                 <div className="p-5">
                   <p className="flex items-center gap-1.5 text-xs text-muted">
                     <Calendar size={12} />
-
                     {new Date(
                       item.publishedAt || item.createdAt
                     ).toLocaleDateString("hi-IN")}
