@@ -1,3 +1,4 @@
+
 import { notFound } from "next/navigation";
 import { Calendar } from "lucide-react";
 import Header from "@/components/Header";
@@ -26,8 +27,13 @@ type PostResponse = {
 };
 
 async function getPost(slug: string): Promise<Post | null> {
+  const API_URL =
+    process.env.API_URL ||
+    process.env.NEXT_PUBLIC_API_URL ||
+    "http://localhost:4000";
+
   const res = await fetch(
-    `http://localhost:4000/api/posts/${encodeURIComponent(slug)}`,
+    `${API_URL}/api/posts/${encodeURIComponent(slug)}`,
     {
       cache: "no-store",
     }
@@ -111,3 +117,4 @@ export default async function NewsDetailPage({
     </main>
   );
 }
+

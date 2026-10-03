@@ -38,7 +38,7 @@ type PostsResponse = {
 
 async function getPosts(): Promise<Post[]> {
   const API_URL =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+    process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
   const res = await fetch(`${API_URL}/api/posts`, {
     cache: "no-store",
