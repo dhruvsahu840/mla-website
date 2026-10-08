@@ -52,3 +52,22 @@ export const postSchema = z.object({
   status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]).default("DRAFT"),
 });
 export type PostInput = z.infer<typeof postSchema>;
+
+export const eventMediaSchema = z.object({
+  type: z.enum(["IMAGE", "VIDEO"]),
+  url: z.string().url(),
+  publicId: z.string().optional(),
+  sortOrder: z.number().int().min(0).optional(),
+  caption: z.string().max(500).optional(),
+});
+
+export const eventSchema = z.object({
+  title: z.string().min(3).max(200),
+  slug: z.string().min(3).max(200),
+  description: z.string().min(10),
+  venue: z.string().max(300).optional(),
+  eventDate: z.string().datetime(),
+  coverImage: z.string().url().optional(),
+  status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]).default("DRAFT"),
+  media: z.array(eventMediaSchema).default([]),
+});

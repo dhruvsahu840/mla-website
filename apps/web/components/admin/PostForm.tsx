@@ -65,20 +65,29 @@ export default function PostForm({
     setError("");
 
     const payload = {
-      ...values,
+      title: values.title,
       slug: values.slug || slugify(values.title),
+      excerpt: values.excerpt,
+      content: values.content,
+      category: values.category,
+      status: values.status,
+      coverImage: values.coverImage,
     };
 
-    const res = isEdit
-      ? await apiPut(`/api/posts/admin/${initial!.id}`, payload)
-      : await apiPost("/api/posts", payload);
+    try {
+      const res = isEdit
+        ? await apiPut(`/api/posts/admin/${initial!.id}`, payload)
+        : await apiPost("/api/posts", payload);
 
-    setSubmitting(false);
-
-    if (res.success) {
-      router.push("/admin/news");
-    } else {
-      setError(res.message || "सहेजने में विफल रहा।");
+      if (res.success) {
+        router.push("/admin/news");
+      } else {
+        setError(res.message || "सहेजने में विफल रहा।");
+      }
+    } catch {
+      setError("सहेजने में विफल रहा।");
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -102,24 +111,6 @@ export default function PostForm({
           value={values.title}
           onChange={(e) => update("title", e.target.value)}
           className="w-full rounded-lg border border-line px-4 py-2.5 text-sm focus:border-primary"
-        />
-      </div>
-
-      {/* Slug */}
-      <div>
-        <label
-          htmlFor="slug"
-          className="block text-sm font-semibold text-ink mb-1.5"
-        >
-          Slug (URL) — खाली छोड़ने पर स्वतः बनेगा
-        </label>
-
-        <input
-          id="slug"
-          value={values.slug}
-          onChange={(e) => update("slug", e.target.value)}
-          placeholder="example-post-title"
-          className="w-full rounded-lg border border-line px-4 py-2.5 text-sm focus:border-primary font-mono"
         />
       </div>
 
@@ -153,6 +144,7 @@ export default function PostForm({
         <textarea
           id="excerpt"
           rows={2}
+          maxLength={300}
           value={values.excerpt}
           onChange={(e) => update("excerpt", e.target.value)}
           className="w-full rounded-lg border border-line px-4 py-2.5 text-sm focus:border-primary"
@@ -225,45 +217,6 @@ export default function PostForm({
           <option value="PUBLISHED">प्रकाशित करें</option>
           <option value="ARCHIVED">संग्रहीत करें</option>
         </select>
-      </div>
-
-      {/* Meta Title */}
-      <div>
-        <label
-          htmlFor="metaTitle"
-          className="block text-sm font-semibold text-ink mb-1.5"
-        >
-          Meta Title
-        </label>
-
-        <input
-          id="metaTitle"
-          value={values.metaTitle}
-          onChange={(e) => update("metaTitle", e.target.value)}
-          maxLength={200}
-          placeholder="SEO के लिए शीर्षक"
-          className="w-full rounded-lg border border-line px-4 py-2.5 text-sm focus:border-primary"
-        />
-      </div>
-
-      {/* Meta Description */}
-      <div>
-        <label
-          htmlFor="metaDescription"
-          className="block text-sm font-semibold text-ink mb-1.5"
-        >
-          Meta Description
-        </label>
-
-        <textarea
-          id="metaDescription"
-          rows={3}
-          maxLength={300}
-          value={values.metaDescription}
-          onChange={(e) => update("metaDescription", e.target.value)}
-          placeholder="Search engines के लिए छोटा विवरण..."
-          className="w-full rounded-lg border border-line px-4 py-2.5 text-sm focus:border-primary"
-        />
       </div>
 
       {/* Error */}

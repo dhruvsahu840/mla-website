@@ -1,4 +1,3 @@
-
 import { notFound } from "next/navigation";
 import { Calendar } from "lucide-react";
 import Header from "@/components/Header";
@@ -31,7 +30,7 @@ async function getPost(slug: string): Promise<Post | null> {
     process.env.API_URL ||
     process.env.NEXT_PUBLIC_API_URL ||
     "http://localhost:4000";
-
+    
   const res = await fetch(
     `${API_URL}/api/posts/${encodeURIComponent(slug)}`,
     {
@@ -59,7 +58,10 @@ export default async function NewsDetailPage({
 }) {
   const { slug } = await params;
 
-  const item = await getPost(slug);
+const decodedSlug = decodeURIComponent(slug);
+
+const item = await getPost(decodedSlug);
+
 
   if (!item || item.status !== "PUBLISHED") {
     notFound();
@@ -117,4 +119,3 @@ export default async function NewsDetailPage({
     </main>
   );
 }
-

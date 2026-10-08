@@ -9,9 +9,12 @@ import authRoutes from "./routes/auth";
 import grievanceRoutes from "./routes/grievances";
 import contactRoutes from "./routes/contact";
 import postRoutes from "./routes/posts";
+import eventRoutes from "./routes/events";
 import settingsRoutes from "./routes/settings";
 import dashboardRoutes from "./routes/dashboard";
+import mediaRoutes from "./routes/media";
 import { errorHandler, notFound } from "./middleware/errorHandler";
+
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -29,8 +32,11 @@ app.use("/api/auth", authRoutes);
 app.use("/api/grievances", grievanceRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/posts", postRoutes);
+app.use("/api/events", eventRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/events", eventRoutes);
+app.use("/api/media", mediaRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

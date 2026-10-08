@@ -183,3 +183,4 @@ export const galleryAlbums = [
   { slug: "school-visit", title: "विद्यालय भ्रमण", date: "मार्च 2024", count: 10 },
   { slug: "public-meetings", title: "जनसंपर्क बैठकें", date: "चालू वर्ष", count: 25 },
 ];
+  
