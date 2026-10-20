@@ -1,6 +1,7 @@
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import QuickLinks from "@/components/QuickLinks";
+import HeroButtons from "@/components/HeroButtons";
 import AboutPreview from "@/components/AboutPreview";
 import Stats from "@/components/Stats";
 import LatestNews from "@/components/LatestNews";
@@ -15,6 +16,7 @@ export default function Home() {
       <Header />
       <Hero />
       <QuickLinks />
+      <HeroButtons/>
       <AboutPreview />
       <Stats />
       <LatestNews />

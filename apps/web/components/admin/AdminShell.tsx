@@ -10,6 +10,7 @@ import {
   CalendarDays,
   Settings,
   Users,
+  Contact,
   LogOut,
   Loader2,
 } from "lucide-react";
@@ -20,6 +21,12 @@ const navItems = [
     href: "/admin",
     label: "डैशबोर्ड",
     icon: LayoutDashboard,
+    roles: ["ADMIN", "STAFF"],
+  },
+  {
+    href: "/admin/citizens",
+    label: "नागरिक सूची",
+    icon: Contact,
     roles: ["ADMIN", "STAFF"],
   },
   {
@@ -37,6 +44,12 @@ const navItems = [
   {
     href: "/admin/events",
     label: "कार्यक्रम",
+    icon: CalendarDays,
+    roles: ["ADMIN", "STAFF"],
+  },
+  {
+    href: "/admin/gallery",
+    label: "फोटो गैलरी",
     icon: CalendarDays,
     roles: ["ADMIN", "STAFF"],
   },
@@ -107,11 +120,10 @@ export default function AdminShell({
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors ${
-                  active
+                className={`flex items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors ${active
                     ? "bg-white/10 text-white border-r-4 border-accent"
                     : "text-white/75 hover:bg-white/5 hover:text-white"
-                }`}
+                  }`}
               >
                 <Icon size={17} />
                 {item.label}
@@ -165,11 +177,10 @@ export default function AdminShell({
               <Link
                 key={item.href}
                 href={item.href}
-                className={`shrink-0 text-xs font-medium px-3 py-1.5 rounded-full ${
-                  active
+                className={`shrink-0 text-xs font-medium px-3 py-1.5 rounded-full ${active
                     ? "bg-primary text-white"
                     : "bg-primary-light text-primary-dark"
-                }`}
+                  }`}
               >
                 {item.label}
               </Link>

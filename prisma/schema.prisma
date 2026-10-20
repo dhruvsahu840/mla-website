@@ -287,14 +287,33 @@ model AuditLog {
   @@map("audit_logs")
 }
 
-model ContactMessage {
-  id        String   @id @default(cuid())
-  name      String
-  email     String?
-  phone     String?
-  subject   String?
-  message   String   @db.Text
-  createdAt DateTime @default(now())
 
+model ContactMessage {
+  id         String   @id @default(cuid())
+  name       String
+  email      String?
+  phone      String?
+  subject    String?
+  message    String   @db.Text
+
+  // Citizen details
+  gender     String?
+  age        Int?
+  address    String?  @db.Text
+  village    String?
+  tehsil     String?
+  district   String?
+  occupation String?
+
+  createdAt  DateTime @default(now())
+
+  @@index([gender])
+  @@index([age])
+  @@index([village])
+  @@index([tehsil])
+  @@index([district])
+  @@index([occupation])
+  @@index([createdAt])
   @@map("contact_messages")
 }
+
