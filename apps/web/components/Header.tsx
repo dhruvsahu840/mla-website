@@ -13,7 +13,7 @@ const navItems = [
   { label: "विकास कार्य", href: "/development-works" },
   { label: "योजनाएं", href: "/schemes" },
   { label: "कार्यक्रम", href: "/events" },
-  { label: "मीडिया", href: "/news" },
+  { label: "समाचार", href: "/news" },
   { label: "गैलरी", href: "/gallery" },
   { label: "जनसंपर्क", href: "/grievance" },
   { label: "संपर्क करें", href: "/contact" },

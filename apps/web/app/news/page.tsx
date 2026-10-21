@@ -38,95 +38,132 @@ type PostsResponse = {
 
 async function getPosts(): Promise<Post[]> {
   const API_URL =
-    process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+    process.env.API_URL ||
+    process.env.NEXT_PUBLIC_API_URL ||
+    "http://localhost:4000";
 
   const res = await fetch(`${API_URL}/api/posts`, {
     cache: "no-store",
   });
 
   if (!res.ok) {
-    throw new Error(`Failed to fetch posts: ${res.status}`);
+    throw new Error("समाचार लोड नहीं हो सके।");
   }
 
   const result: PostsResponse = await res.json();
 
   if (!result.success || !Array.isArray(result.data)) {
-    throw new Error("Invalid posts response");
+    throw new Error("समाचार डेटा सही नहीं है।");
   }
 
   return result.data.filter((post) => post.status === "PUBLISHED");
 }
 
 export default async function NewsPage() {
-  const newsItems = await getPosts();
+  let newsItems: Post[] = [];
+
+  try {
+    newsItems = await getPosts();
+  } catch (error) {
+    console.error("Failed to load news:", error);
+  }
 
   return (
     <main>
       <Header />
 
       <PageBanner
-        eyebrow="मीडिया"
         title="समाचार एवं अपडेट"
-        subtitle="क्षेत्र भ्रमण, कार्यक्रमों और घोषणाओं की ताजा जानकारी।"
+        subtitle="क्षेत्र की गतिविधियों, विकास कार्यों और जनसेवा से जुड़ी ताज़ा खबरें"
       />
 
       <section className="container-page py-12 md:py-16">
         {newsItems.length === 0 ? (
-          <p className="text-center text-muted">
-            अभी कोई समाचार उपलब्ध नहीं है।
-          </p>
+          <div className="py-16 text-center">
+            <Calendar
+              size={42}
+              className="mx-auto mb-4 text-muted"
+            />
+            <h2 className="text-xl font-bold text-ink">
+              अभी कोई समाचार उपलब्ध नहीं है
+            </h2>
+            <p className="mt-2 text-sm text-muted">
+              नए समाचार प्रकाशित होने पर वे यहाँ दिखाई देंगे।
+            </p>
+          </div>
         ) : (
-          <div className="grid md:grid-cols-3 gap-6">
-            {newsItems.map((item, i) => (
-              <article
-                key={item.id}
-                className="border border-line rounded-2xl overflow-hidden bg-white hover:shadow-md transition-shadow"
-              >
-                {item.coverImage ? (
-                  <img
-                    src={item.coverImage}
-                    alt={item.title}
-                    className="w-full aspect-video object-cover"
-                  />
-                ) : (
-                  <Placeholder
-                    label="समाचार चित्र"
-                    variant={variants[i % variants.length]}
-                    className="w-full aspect-video"
-                  />
-                )}
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {newsItems.map((item, i) => {
+              const date = new Date(
+                item.publishedAt || item.createdAt
+              ).toLocaleDateString("hi-IN", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              });
 
-                <div className="p-5">
-                  <p className="flex items-center gap-1.5 text-xs text-muted">
-                    <Calendar size={12} />
-                    {new Date(
-                      item.publishedAt || item.createdAt
-                    ).toLocaleDateString("hi-IN")}
-                  </p>
-
-                  {item.category && (
-                    <p className="text-xs text-primary font-semibold mt-2">
-                      {item.category}
-                    </p>
-                  )}
-
-                  <h3 className="font-display font-bold text-ink mt-2 leading-snug">
-                    {item.title}
-                  </h3>
-
-                  <p className="text-sm text-muted mt-2 line-clamp-2">
-                    {item.excerpt}
-                  </p>
-
+              return (
+                <article
+                  key={item.slug}
+                  className="overflow-hidden rounded-2xl border border-line bg-white transition-shadow duration-300 hover:shadow-lg"
+                >
+                  {/* Clickable news image */}
                   <Link
                     href={`/news/${item.slug}`}
-                    className="inline-flex items-center gap-1 text-sm font-semibold text-primary mt-4 hover:underline"
+                    className="block aspect-video overflow-hidden bg-gray-100"
+                    aria-label={`${item.title} पढ़ें`}
                   >
-                    और पढ़ें <ArrowRight size={14} />
+                    {item.coverImage ? (
+                      <img
+                        src={item.coverImage}
+                        alt={item.title}
+                        className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                      />
+                    ) : (
+                      <Placeholder
+                        label="समाचार चित्र"
+                        variant={variants[i % variants.length]}
+                        className="h-full w-full"
+                      />
+                    )}
                   </Link>
-                </div>
-              </article>
-            ))}
+
+                  <div className="p-5">
+                    <p className="text-xs text-muted">{date}</p>
+
+                    {item.category && (
+                      <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-primary">
+                        {item.category}
+                      </p>
+                    )}
+
+                    {/* Clickable news title */}
+                    <Link
+                      href={`/news/${item.slug}`}
+                      className="block hover:text-primary transition-colors"
+                    >
+                      <h2 className="mt-2 font-display text-lg font-bold leading-snug text-ink">
+                        {item.title}
+                      </h2>
+                    </Link>
+
+                    {item.excerpt && (
+                      <p className="mt-2 line-clamp-2 text-sm text-muted">
+                        {item.excerpt}
+                      </p>
+                    )}
+
+                    {/* और पढ़ें button — same position */}
+                    <Link
+                      href={`/news/${item.slug}`}
+                      className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
+                    >
+                      और पढ़ें <ArrowRight size={14} />
+                    </Link>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         )}
       </section>

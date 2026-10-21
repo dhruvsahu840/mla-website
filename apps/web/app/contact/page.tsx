@@ -5,7 +5,7 @@ import Footer from "@/components/Footer";
 import ContactForm from "@/components/ContactForm";
 import { site } from "@/lib/site-content";
 
-export const metadata: Metadata = { title: "संपर्क करें" };
+export const metadata: Metadata = { title: "हमसे जुड़ें" };
 
 export default function ContactPage() {
   return (
@@ -13,7 +13,7 @@ export default function ContactPage() {
       <Header />
       <section className="bg-primary-light py-10">
         <div className="container-page">
-          <h1 className="font-display text-3xl md:text-4xl font-bold text-ink">संपर्क करें</h1>
+          <h1 className="font-display text-3xl md:text-4xl font-bold text-ink">हमसे जुड़ें </h1>
           <p className="text-muted mt-2">आपके सुझाव और प्रश्नों का स्वागत है।</p>
         </div>
       </section>

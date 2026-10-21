@@ -271,7 +271,7 @@ export default function ContactForm() {
         {status === "submitting" && (
           <Loader2 className="animate-spin" size={18} />
         )}
-        {status === "submitting" ? "भेजा जा रहा है..." : "जानकारी भेजें"}
+        {status === "submitting" ? "भेजा जा रहा है..." : "सबमिट करे"}
       </button>
     </form>
   );

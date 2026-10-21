@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import Placeholder from "./Placeholder";
@@ -37,57 +38,81 @@ export default async function LatestNews() {
 
         <Link
           href="/news"
-          className="text-sm font-semibold text-primary flex items-center gap-1 hover:underline"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
         >
-          सभी देखें <ArrowRight size={14} />
+          सभी देखें <ArrowRight size={16} />
         </Link>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-6">
-        {newsItems.map((item, i) => (
-          <article
-            key={item.slug}
-            className="border border-line rounded-2xl overflow-hidden bg-white hover:shadow-md transition-shadow"
-          >
-            {item.coverImage ? (
-              <img
-                src={item.coverImage}
-                alt={item.title}
-                className="w-full aspect-video object-cover"
-              />
-            ) : (
-              <Placeholder
-                label="समाचार चित्र"
-                variant={variants[i % variants.length]}
-                className="w-full aspect-video"
-              />
-            )}
+      {newsItems.length === 0 ? (
+        <p className="text-muted">अभी कोई समाचार उपलब्ध नहीं है।</p>
+      ) : (
+        <div className="grid md:grid-cols-3 gap-6">
+          {newsItems.map((item, i) => {
+            const date = new Date(
+              item.publishedAt || item.createdAt
+            ).toLocaleDateString("hi-IN", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            });
 
-            <div className="p-5">
-              <p className="text-xs text-muted">
-                {new Date(
-                  item.publishedAt || item.createdAt
-                ).toLocaleDateString("hi-IN")}
-              </p>
-
-              <h3 className="font-display font-bold text-ink mt-2 leading-snug">
-                {item.title}
-              </h3>
-
-              <p className="text-sm text-muted mt-2 line-clamp-2">
-                {item.excerpt}
-              </p>
-
-              <Link
-                href={`/news/${item.slug}`}
-                className="inline-flex items-center gap-1 text-sm font-semibold text-primary mt-4 hover:underline"
+            return (
+              <article
+                key={item.slug}
+                className="overflow-hidden rounded-2xl border border-line  bg-white"
               >
-                और पढ़ें <ArrowRight size={14} />
-              </Link>
-            </div>
-          </article>
-        ))}
-      </div>
+                {/* Clickable news image */}
+                <Link
+                  href={`/news/${item.slug}`}
+                  className="block aspect-video overflow-hidden bg-gray-100"
+                  aria-label={`${item.title} पढ़ें`}
+                >
+                  {item.coverImage ? (
+                    <img
+                      src={item.coverImage}
+                      alt={item.title}
+                      className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                    />
+                  ) : (
+                    <Placeholder
+                      label="समाचार चित्र"
+                      variant={variants[i % variants.length]}
+                      className="h-full w-full"
+                    />
+                  )}
+                </Link>
+
+                <div className="p-5">
+                  <p className="text-xs text-muted">{date}</p>
+
+                  {/* Clickable news title */}
+                  <Link
+                    href={`/news/${item.slug}`}
+                    className="block transition-colors hover:text-primary"
+                  >
+                    <h3 className="font-display font-bold text-ink mt-2 leading-snug">
+                      {item.title}
+                    </h3>
+                  </Link>
+
+                  <p className="text-sm text-muted mt-2 line-clamp-2">
+                    {item.excerpt}
+                  </p>
+
+                  {/* और पढ़ें button — original position preserved */}
+                  <Link
+                    href={`/news/${item.slug}`}
+                    className="inline-flex items-center gap-2 mt-4 text-sm font-semibold text-primary hover:underline"
+                  >
+                    और पढ़ें <ArrowRight size={14} />
+                  </Link>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
     </section>
   );
 }

@@ -1,6 +1,7 @@
+
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Calendar, MapPin } from "lucide-react";
+import { ArrowRight, Calendar, MapPin } from "lucide-react";
 
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -45,30 +46,42 @@ function formatDate(date: string) {
   });
 }
 
+function isUpcoming(date: string) {
+  const eventDate = new Date(date);
+  const today = new Date();
+
+  eventDate.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
+
+  return eventDate >= today;
+}
+
 async function getEvents(): Promise<Event[]> {
-  const apiUrl =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+  const apiUrl = (
+    process.env.API_URL ||
+    process.env.NEXT_PUBLIC_API_URL ||
+    "http://localhost:4000"
+  ).replace(/\/+$/, "");
 
   try {
     const response = await fetch(
       `${apiUrl}/api/events?page=1&pageSize=100`,
-      {
-        cache: "no-store",
-      }
+      { cache: "no-store" }
     );
 
-    if (!response.ok) {
-      return [];
-    }
+    if (!response.ok) return [];
 
     const result: EventsResponse = await response.json();
 
-    if (!result.success || !result.data) {
+    if (!result.success || !Array.isArray(result.data)) {
       return [];
     }
 
-    return result.data;
-  } catch {
+    return result.data.filter(
+      (event) => event.status === "PUBLISHED"
+    );
+  } catch (error) {
+    console.error("Failed to load events:", error);
     return [];
   }
 }
@@ -76,10 +89,8 @@ async function getEvents(): Promise<Event[]> {
 export default async function EventsPage() {
   const events = await getEvents();
 
-  const now = new Date();
-
   const upcoming = events
-    .filter((event) => new Date(event.eventDate) >= now)
+    .filter((event) => isUpcoming(event.eventDate))
     .sort(
       (a, b) =>
         new Date(a.eventDate).getTime() -
@@ -87,12 +98,103 @@ export default async function EventsPage() {
     );
 
   const past = events
-    .filter((event) => new Date(event.eventDate) < now)
+    .filter((event) => !isUpcoming(event.eventDate))
     .sort(
       (a, b) =>
         new Date(b.eventDate).getTime() -
         new Date(a.eventDate).getTime()
     );
+
+  function renderEvent(event: Event, upcomingEvent: boolean) {
+    const image =
+      event.coverImage ||
+      event.media?.find((media) => media.type === "IMAGE")?.url;
+
+    return (
+      <article
+        key={event.id}
+        className="group bg-white border border-line rounded-2xl overflow-hidden hover:border-primary/30 transition-colors"
+      >
+        <div className="flex flex-col md:flex-row items-stretch">
+          {image && (
+            <div className="md:w-[32%] lg:w-[28%] shrink-0">
+              <Link
+                href={`/events/${event.slug}`}
+                className="block h-56 md:h-full md:min-h-[260px] overflow-hidden bg-gray-100"
+                aria-label={`${event.title} देखें`}
+              >
+                <img
+                  src={image}
+                  alt={event.title}
+                  className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 ${
+                    upcomingEvent ? "" : "opacity-95"
+                  }`}
+                />
+              </Link>
+            </div>
+          )}
+
+          <div
+            className={`flex-1 flex flex-col p-6 md:p-7 ${
+              image ? "" : "w-full"
+            }`}
+          >
+            <span
+              className={`inline-flex self-start items-center text-xs font-semibold rounded-full px-3 py-1 ${
+                upcomingEvent
+                  ? "text-white bg-primary"
+                  : "text-muted bg-gray-100"
+              }`}
+            >
+              {upcomingEvent ? "आगामी" : "पिछला कार्यक्रम"}
+            </span>
+
+            <Link
+              href={`/events/${event.slug}`}
+              className="block"
+            >
+              <h3 className="font-display text-xl md:text-2xl font-bold text-ink mt-3 hover:text-primary transition-colors">
+                {event.title}
+              </h3>
+            </Link>
+
+            <div className="flex flex-wrap gap-x-6 gap-y-2 mt-4">
+              <p className="flex items-center gap-2 text-sm text-ink font-medium">
+                <Calendar
+                  size={16}
+                  className="text-primary shrink-0"
+                />
+                {formatDate(event.eventDate)}
+              </p>
+
+              {event.venue && (
+                <p className="flex items-center gap-2 text-sm text-muted">
+                  <MapPin
+                    size={16}
+                    className="text-primary shrink-0"
+                  />
+                  {event.venue}
+                </p>
+              )}
+            </div>
+
+            <div className="border-t border-line my-5" />
+
+            <p className="text-sm md:text-base text-muted leading-7">
+              {event.description}
+            </p>
+
+            <Link
+              href={`/events/${event.slug}`}
+              className="mt-auto pt-5 inline-flex items-center gap-2 self-start text-sm font-semibold text-primary hover:underline"
+            >
+              और पढ़ें <ArrowRight size={14} />
+            </Link>
+          </div>
+        </div>
+      </article>
+    );
+  }
 
   return (
     <main>
@@ -105,10 +207,7 @@ export default async function EventsPage() {
       />
 
       <section className="container-page py-12 md:py-16">
-        {/* =====================================================
-            UPCOMING EVENTS
-        ====================================================== */}
-
+        {/* UPCOMING EVENTS */}
         <div className="flex items-center gap-3 mb-8">
           <div className="w-1 h-8 rounded-full bg-primary" />
 
@@ -136,98 +235,11 @@ export default async function EventsPage() {
           </div>
         ) : (
           <div className="space-y-5 mb-16">
-            {upcoming.map((event) => {
-              const image =
-                event.coverImage ||
-                event.media.find(
-                  (media) => media.type === "IMAGE"
-                )?.url;
-
-              return (
-                <article
-                  key={event.id}
-                  className="group bg-white border border-line rounded-2xl overflow-hidden hover:border-primary/30 transition-colors"
-                >
-                  <div className="flex flex-col md:flex-row">
-                    {/* IMAGE */}
-                    {image && (
-                      <div className="md:w-[32%] lg:w-[28%] shrink-0">
-                        <Link
-                          href={`/events/${event.slug}`}
-                          className="block h-56 md:h-full min-h-[220px] overflow-hidden bg-gray-100"
-                        >
-                          <img
-                            src={image}
-                            alt={event.title}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                          />
-                        </Link>
-                      </div>
-                    )}
-
-                    {/* CONTENT */}
-                    <div
-                      className={`flex-1 p-6 md:p-7 ${
-                        image ? "" : "w-full"
-                      }`}
-                    >
-                      {/* Status */}
-                      <span className="inline-flex items-center text-xs font-semibold text-white bg-primary rounded-full px-3 py-1">
-                        आगामी
-                      </span>
-
-                      {/* Title */}
-                      <Link
-                        href={`/events/${event.slug}`}
-                        className="block"
-                      >
-                        <h3 className="font-display text-xl md:text-2xl font-bold text-ink mt-3 hover:text-primary transition-colors">
-                          {event.title}
-                        </h3>
-                      </Link>
-
-                      {/* Date + Venue */}
-                      <div className="flex flex-wrap gap-x-6 gap-y-2 mt-4">
-                        <p className="flex items-center gap-2 text-sm text-ink font-medium">
-                          <Calendar
-                            size={16}
-                            className="text-primary shrink-0"
-                          />
-
-                          {formatDate(event.eventDate)}
-                        </p>
-
-                        {event.venue && (
-                          <p className="flex items-center gap-2 text-sm text-muted">
-                            <MapPin
-                              size={16}
-                              className="text-primary shrink-0"
-                            />
-
-                            {event.venue}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Divider */}
-                      <div className="border-t border-line my-5" />
-
-                      {/* Description */}
-                      <p className="text-sm md:text-base text-muted leading-7">
-                        {event.description}
-                      </p>
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
+            {upcoming.map((event) => renderEvent(event, true))}
           </div>
         )}
 
-        {/* =====================================================
-            PAST EVENTS
-        ====================================================== */}
-
+        {/* PAST EVENTS */}
         <div className="flex items-center gap-3 mb-8">
           <div className="w-1 h-8 rounded-full bg-ink/20" />
 
@@ -255,91 +267,7 @@ export default async function EventsPage() {
           </div>
         ) : (
           <div className="space-y-5">
-            {past.map((event) => {
-              const image =
-                event.coverImage ||
-                event.media.find(
-                  (media) => media.type === "IMAGE"
-                )?.url;
-
-              return (
-                <article
-                  key={event.id}
-                  className="group bg-white border border-line rounded-2xl overflow-hidden hover:border-primary/20 transition-colors"
-                >
-                  <div className="flex flex-col md:flex-row">
-                    {/* IMAGE */}
-                    {image && (
-                      <div className="md:w-[32%] lg:w-[28%] shrink-0">
-                        <Link
-                          href={`/events/${event.slug}`}
-                          className="block h-56 md:h-full min-h-[220px] overflow-hidden bg-gray-100"
-                        >
-                          <img
-                            src={image}
-                            alt={event.title}
-                            className="w-full h-full object-cover opacity-95 transition-transform duration-500 group-hover:scale-105"
-                          />
-                        </Link>
-                      </div>
-                    )}
-
-                    {/* CONTENT */}
-                    <div
-                      className={`flex-1 p-6 md:p-7 ${
-                        image ? "" : "w-full"
-                      }`}
-                    >
-                      {/* Status */}
-                      <span className="inline-flex items-center text-xs font-semibold text-muted bg-gray-100 rounded-full px-3 py-1">
-                        पिछला कार्यक्रम
-                      </span>
-
-                      {/* Title */}
-                      <Link
-                        href={`/events/${event.slug}`}
-                        className="block"
-                      >
-                        <h3 className="font-display text-xl md:text-2xl font-bold text-ink mt-3 hover:text-primary transition-colors">
-                          {event.title}
-                        </h3>
-                      </Link>
-
-                      {/* Date + Venue */}
-                      <div className="flex flex-wrap gap-x-6 gap-y-2 mt-4">
-                        <p className="flex items-center gap-2 text-sm text-ink font-medium">
-                          <Calendar
-                            size={16}
-                            className="text-primary shrink-0"
-                          />
-
-                          {formatDate(event.eventDate)}
-                        </p>
-
-                        {event.venue && (
-                          <p className="flex items-center gap-2 text-sm text-muted">
-                            <MapPin
-                              size={16}
-                              className="text-primary shrink-0"
-                            />
-
-                            {event.venue}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Divider */}
-                      <div className="border-t border-line my-5" />
-
-                      {/* Description */}
-                      <p className="text-sm md:text-base text-muted leading-7">
-                        {event.description}
-                      </p>
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
+            {past.map((event) => renderEvent(event, false))}
           </div>
         )}
       </section>

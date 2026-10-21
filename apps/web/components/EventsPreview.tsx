@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import {
   ArrowRight,
@@ -40,49 +41,74 @@ function formatDate(date: string) {
   });
 }
 
+function isUpcoming(date: string) {
+  const eventDate = new Date(date);
+  const today = new Date();
+
+  eventDate.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
+
+  return eventDate >= today;
+}
+
 async function getUpcomingEvents(): Promise<Event[]> {
-  const apiUrl =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+  const apiUrl = (
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"
+  ).replace(/\/+$/, "");
 
   try {
     const response = await fetch(
-      `${apiUrl}/api/events?page=1&pageSize=20`,
-      {
-        cache: "no-store",
-      }
+      `${apiUrl}/api/events?page=1&pageSize=100`,
+      { cache: "no-store" }
     );
 
-    if (!response.ok) {
-      return [];
-    }
+    if (!response.ok) return [];
 
     const result: EventsResponse = await response.json();
 
-    if (!result.success || !result.data) {
+    if (!result.success || !Array.isArray(result.data)) {
       return [];
     }
 
-    const now = new Date();
+    const publishedEvents = result.data.filter(
+      (event) => event.status === "PUBLISHED"
+    );
 
-    return result.data
-      .filter(
-        (event) =>
-          event.status === "PUBLISHED" &&
-          new Date(event.eventDate) >= now
-      )
+    const upcomingEvents = publishedEvents
+      .filter((event) => isUpcoming(event.eventDate))
       .sort(
         (a, b) =>
           new Date(a.eventDate).getTime() -
           new Date(b.eventDate).getTime()
-      )
-      .slice(0, 3);
-  } catch {
+      );
+
+    const pastEvents = publishedEvents
+      .filter((event) => !isUpcoming(event.eventDate))
+      .sort(
+        (a, b) =>
+          new Date(b.eventDate).getTime() -
+          new Date(a.eventDate).getTime()
+      );
+
+    const upcomingToShow = upcomingEvents.slice(0, 3);
+    const remainingSlots = 3 - upcomingToShow.length;
+
+    return [
+      ...upcomingToShow,
+      ...pastEvents.slice(0, remainingSlots),
+    ];
+  } catch (error) {
+    console.error("Failed to load events:", error);
     return [];
   }
 }
 
 export default async function EventsPreview() {
   const events = await getUpcomingEvents();
+
+  const hasUpcomingEvents = events.some((event) =>
+    isUpcoming(event.eventDate)
+  );
 
   if (events.length === 0) {
     return null;
@@ -97,7 +123,7 @@ export default async function EventsPreview() {
           </p>
 
           <h2 className="font-display text-2xl md:text-3xl font-bold text-ink">
-            आगामी कार्यक्रम
+            {hasUpcomingEvents ? "आगामी कार्यक्रम" : "कार्यक्रम"}
           </h2>
         </div>
 
@@ -110,47 +136,49 @@ export default async function EventsPreview() {
         </Link>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-6">
+      <div className="grid items-stretch md:grid-cols-3 gap-6">
         {events.map((event) => {
           const image =
             event.coverImage ||
-            event.media.find(
-              (media) => media.type === "IMAGE"
-            )?.url;
+            event.media?.find((media) => media.type === "IMAGE")?.url;
+
+          const upcoming = isUpcoming(event.eventDate);
 
           return (
             <article
               key={event.id}
-              className="group bg-white border border-line rounded-2xl overflow-hidden hover:border-primary/30 transition-colors"
+              className="group h-full flex flex-col bg-white border border-line rounded-2xl overflow-hidden hover:border-primary/30 transition-colors"
             >
-              {image ? (
-                <Link
-                  href={`/events/${event.slug}`}
-                  className="block aspect-[16/10] overflow-hidden bg-gray-100"
-                >
+              <Link
+                href={`/events/${event.slug}`}
+                className="block aspect-[16/10] overflow-hidden bg-gray-100"
+                aria-label={`${event.title} देखें`}
+              >
+                {image ? (
                   <img
                     src={image}
                     alt={event.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                </Link>
-              ) : (
-                <Link
-                  href={`/events/${event.slug}`}
-                  className="block"
-                >
-                  <div className="aspect-[16/10] bg-primary/5 flex items-center justify-center">
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-primary/5">
                     <ImageIcon
                       size={34}
                       className="text-primary/40"
                     />
                   </div>
-                </Link>
-              )}
+                )}
+              </Link>
 
-              <div className="p-5">
-                <span className="inline-flex text-xs font-semibold text-white bg-primary rounded-full px-3 py-1">
-                  आगामी
+              <div className="flex flex-1 flex-col p-5">
+                <span
+                  className={`inline-flex self-start text-xs font-semibold rounded-full px-3 py-1 ${
+                    upcoming
+                      ? "text-white bg-primary"
+                      : "text-white bg-gray-600"
+                  }`}
+                >
+                  {upcoming ? "आगामी" : "संपन्न"}
                 </span>
 
                 <Link
@@ -167,7 +195,6 @@ export default async function EventsPreview() {
                     size={14}
                     className="text-primary shrink-0"
                   />
-
                   {formatDate(event.eventDate)}
                 </p>
 
@@ -177,7 +204,6 @@ export default async function EventsPreview() {
                       size={14}
                       className="text-primary shrink-0"
                     />
-
                     <span className="line-clamp-1">
                       {event.venue}
                     </span>
@@ -187,6 +213,13 @@ export default async function EventsPreview() {
                 <p className="text-sm text-muted leading-6 mt-3 line-clamp-2">
                   {event.description}
                 </p>
+
+                <Link
+                  href={`/events/${event.slug}`}
+                  className="mt-auto pt-4 inline-flex items-center gap-2 self-start text-sm font-semibold text-primary hover:underline"
+                >
+                  और पढ़ें <ArrowRight size={14} />
+                </Link>
               </div>
             </article>
           );
