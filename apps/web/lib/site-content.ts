@@ -7,9 +7,9 @@ export const site = {
   mlaName: "माननीय विधायक",
   tagline: "जनसेवा ही हमारा संकल्प",
   constituency: "आपका विधानसभा क्षेत्र",
-  phone: "+91 98XXX XXXXX",
-  email: "office@example.com",
-  address: "विधायक कार्यालय, मुख्य मार्ग, आपका शहर, राज्य — 000000",
+  phone: "+91 9801010101",
+  email: "mlabijawar@gmail.com",
+  address: "विधायक कार्यालय, मुख्य मार्ग, बिजावर, मध्य प्रदेश — 471405",
   officeHours: "सोम–शनि, सुबह 10:00 – शाम 5:00",
   social: {
     facebook: "#",
