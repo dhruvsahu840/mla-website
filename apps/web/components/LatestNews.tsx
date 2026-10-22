@@ -30,7 +30,7 @@ export default async function LatestNews() {
   }
 
   return (
-    <section className="container-page py-16 md:py-24">
+    <section className="container-page py-6 md:py-10">
       <div className="flex items-center justify-between mb-8">
         <h2 className="font-display text-2xl md:text-3xl font-bold text-ink">
           ताजा समाचार

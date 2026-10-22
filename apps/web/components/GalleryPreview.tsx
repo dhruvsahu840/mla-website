@@ -42,7 +42,7 @@ export default async function GalleryPreview() {
   const photos = await getLatestPhotos();
 
   return (
-    <section className="container-page py-16 md:py-24">
+    <section className="container-page py-6 md:py-10">
       <div className="mb-8 flex items-center justify-between gap-4">
         <h2 className="font-display text-2xl font-bold text-ink md:text-3xl">
           फोटो गैलरी
@@ -74,7 +74,7 @@ export default async function GalleryPreview() {
                 photo.caption || photo.album?.title || "तस्वीर"
               }`}
             >
-              <div className="flex aspect-square items-center justify-center overflow-hidden bg-gray-50 p-2">
+              <div className="flex aspect-square items-center justify-center overflow-hidden bg-gray-50 ">
                 <img
                   src={photo.url}
                   alt={
@@ -87,11 +87,7 @@ export default async function GalleryPreview() {
                 />
               </div>
 
-              {(photo.caption || photo.album?.title) && (
-                <p className="truncate px-2 py-2 text-xs font-medium text-ink">
-                  {photo.caption || photo.album?.title}
-                </p>
-              )}
+              
             </Link> 
           ))}
         </div>

@@ -10,7 +10,7 @@ const points = [
 
 export default function AboutPreview() { 
   return (
-    <section className="container-page py-16 md:py-24">
+    <section className="container-page py-2 md:py-2">
       <div className="grid items-center gap-10 md:grid-cols-2 md:gap-12">
         {/* About Image */}
         <div className="relative min-h-[320px] w-full overflow-hidden rounded-2xl md:min-h-[440px]">

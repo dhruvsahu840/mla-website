@@ -7,7 +7,7 @@ const icons = [Hammer, MessageSquareText, FileText, ImageIcon, PhoneCall];
 export default function QuickLinks() {
   return (
     <section className="container-page -mt-8 md:-mt-12 relative z-10">
-      <div className="bg-white rounded-2xl shadow-lg border border-line grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 divide-x divide-y md:divide-y-0 divide-line">
+      <div className="bg-white rounded-2xl shadow-lg border border-line grid grid-cols-3 sm:grid-cols-3 md:grid-cols-5 divide-x divide-y md:divide-y-0 divide-line">
         {quickLinks.map((link, i) => {
           const Icon = icons[i];
           return (

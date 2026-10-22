@@ -115,7 +115,7 @@ export default async function EventsPreview() {
   }
 
   return (
-    <section className="container-page py-12 md:py-16">
+    <section className="container-page py-2 md:py-2">
       <div className="flex items-end justify-between gap-4 mb-7">
         <div>
           <p className="text-sm font-semibold text-primary mb-1">

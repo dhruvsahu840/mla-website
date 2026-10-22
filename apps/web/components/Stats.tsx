@@ -5,7 +5,7 @@ const icons = [Hammer, Users2, Trophy, UserCheck];
 
 export default function Stats() {
   return (
-    <section className="bg-primary-light py-14">
+    <section className="bg-primary-light py-8">
       <div className="container-page">
         <p className="text-center text-primary font-semibold text-sm tracking-wide">• हमारी उपलब्धियां •</p>
         <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-5">
@@ -24,9 +24,6 @@ export default function Stats() {
             );
           })}
         </div>
-        <p className="text-center text-xs text-muted mt-6">
-          * सभी आंकड़े सांकेतिक हैं और सत्यापन के बाद अद्यतन किए जाएंगे।
-        </p>
       </div>
     </section>
   );
